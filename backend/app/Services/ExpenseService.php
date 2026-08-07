@@ -48,4 +48,26 @@ class ExpenseService
     {
         return $expense->delete();
     }
+
+    /**
+     * Compute the total spend overall and per category.
+     * @return array
+     */
+    public function getSpendingSummary(): array
+    {
+        $totalSpend = (float) Expense::sum('amount');
+
+        $perCategory = Expense::selectRaw('category, SUM(amount) as total')
+            ->groupBy('category')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->category => (float) $item->total];
+            })
+            ->toArray();
+
+        return [
+            'total_spend' => $totalSpend,
+            'by_category' => $perCategory,
+        ];
+    }
 }
