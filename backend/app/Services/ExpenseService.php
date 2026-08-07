@@ -84,11 +84,23 @@ class ExpenseService
      * Compute the total spend overall and per category.
      * @return array
      */
-    public function getSpendingSummary(): array
+    public function getSpendingSummary(array $filters = []): array
     {
-        $totalSpend = (float) Expense::sum('amount');
+        $baseQuery = Expense::query();
+        
+        if (!empty($filters['search'])) {
+            $baseQuery->where('description', 'ilike', '%' . $filters['search'] . '%');
+        }
+        if (!empty($filters['start_date'])) {
+            $baseQuery->whereDate('date', '>=', $filters['start_date']);
+        }
+        if (!empty($filters['end_date'])) {
+            $baseQuery->whereDate('date', '<=', $filters['end_date']);
+        }
 
-        $perCategory = Expense::selectRaw('category, SUM(amount) as total')
+        // 1. Compute per-category spending without applying the category filter
+        // This ensures the pie chart always shows all categories
+        $perCategory = (clone $baseQuery)->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->get()
             ->mapWithKeys(function ($item) {
@@ -96,9 +108,29 @@ class ExpenseService
             })
             ->toArray();
 
+        // 2. Now apply the category filter for total spend and over time chart
+        if (!empty($filters['category'])) {
+            $baseQuery->where('category', $filters['category']);
+        }
+
+        $totalSpend = (float) (clone $baseQuery)->sum('amount');
+
+        $overTime = (clone $baseQuery)->selectRaw('date, SUM(amount) as total')
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'date' => $item->date,
+                    'total' => (float) $item->total,
+                ];
+            })
+            ->toArray();
+
         return [
             'total_spend' => $totalSpend,
             'by_category' => $perCategory,
+            'over_time' => $overTime,
         ];
     }
 }

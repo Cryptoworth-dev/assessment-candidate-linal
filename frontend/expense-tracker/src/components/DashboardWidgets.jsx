@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { 
+import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
@@ -10,17 +10,17 @@ const DashboardWidgets = ({ summary, expenses, filters, setFilters }) => {
   const [activeChart, setActiveChart] = useState('category'); // 'category' or 'time'
 
   // Determine active color for AreaChart based on selected category, or default green
-  const activeLineColor = filters?.category && CATEGORY_COLORS[filters.category] 
-    ? CATEGORY_COLORS[filters.category] 
-    : '#10b981'; 
+  const activeLineColor = filters?.category && CATEGORY_COLORS[filters.category]
+    ? CATEGORY_COLORS[filters.category]
+    : '#10b981';
 
   // Categories Pie Chart Data
   const categoryData = useMemo(() => {
     if (!summary?.by_category) return [];
-    
+
     const sorted = Object.entries(summary.by_category)
-      .sort((a,b) => b[1] - a[1]);
-      
+      .sort((a, b) => b[1] - a[1]);
+
     return sorted.map(([name, val]) => ({
       name,
       value: val
@@ -29,28 +29,20 @@ const DashboardWidgets = ({ summary, expenses, filters, setFilters }) => {
 
   // Area Chart Data
   const lineData = useMemo(() => {
-    if (!expenses || expenses.length === 0) return [];
-    const grouped = expenses.reduce((acc, curr) => {
-      const date = curr.date;
-      acc[date] = (acc[date] || 0) + parseFloat(curr.amount);
-      return acc;
-    }, {});
+    if (!summary?.over_time) return [];
 
-    return Object.entries(grouped)
-      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
-      .map(([dateStr, total]) => ({
-        date: format(parseISO(dateStr), 'MMM d'),
-        amount: total
-      }));
-  }, [expenses]);
+    return summary.over_time.map(item => ({
+      date: format(parseISO(item.date), 'MMM d'),
+      amount: item.total
+    }));
+  }, [summary]);
 
   return (
     <div className="widget-card" style={{ height: '500px', width: '100%' }}>
       <div className="widget-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span>Chart View:</span>
-          <select 
-            className="filter-select" 
+          <select
+            className="filter-select"
             style={{ padding: '0.25rem 0.5rem', fontSize: '0.9rem' }}
             value={activeChart}
             onChange={(e) => setActiveChart(e.target.value)}
@@ -62,11 +54,11 @@ const DashboardWidgets = ({ summary, expenses, filters, setFilters }) => {
 
         {activeChart === 'time' && (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <select 
-              className="filter-select" 
+            <select
+              className="filter-select"
               style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
               value={filters?.category || ''}
-              onChange={(e) => setFilters(prev => ({...prev, category: e.target.value, page: 1}))}
+              onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value, page: 1 }))}
             >
               <option value="">All Categories</option>
               <option value="Food">Food</option>
@@ -94,18 +86,18 @@ const DashboardWidgets = ({ summary, expenses, filters, setFilters }) => {
                   outerRadius={130}
                   paddingAngle={5}
                   dataKey="value"
-                  label={({percent}) => `${(percent * 100).toFixed(0)}%`}
+                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                 >
                   {categoryData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.name] || '#64748b'} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                <Legend 
-                  layout="vertical" 
-                  verticalAlign="middle" 
-                  align="right" 
-                  wrapperStyle={{ lineHeight: '32px' }} 
+                <Legend
+                  layout="vertical"
+                  verticalAlign="middle"
+                  align="right"
+                  wrapperStyle={{ lineHeight: '32px' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -118,22 +110,22 @@ const DashboardWidgets = ({ summary, expenses, filters, setFilters }) => {
               <AreaChart data={lineData} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
                 <defs>
                   <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={activeLineColor} stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor={activeLineColor} stopOpacity={0}/>
+                    <stop offset="5%" stopColor={activeLineColor} stopOpacity={0.4} />
+                    <stop offset="95%" stopColor={activeLineColor} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                <XAxis dataKey="date" tick={{fontSize: 12, fill: 'var(--text-secondary)'}} axisLine={false} tickLine={false} padding={{ left: 10, right: 10 }} />
-                <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} tick={{fontSize: 12, fill: 'var(--text-secondary)'}} />
+                <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} padding={{ left: 10, right: 10 }} />
+                <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
                 <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Spent']} />
-                <Area 
-                  type="monotone" 
-                  dataKey="amount" 
-                  stroke={activeLineColor} 
-                  strokeWidth={4} 
-                  fillOpacity={1} 
-                  fill="url(#colorAmount)" 
-                  activeDot={{r: 6}} 
+                <Area
+                  type="monotone"
+                  dataKey="amount"
+                  stroke={activeLineColor}
+                  strokeWidth={4}
+                  fillOpacity={1}
+                  fill="url(#colorAmount)"
+                  activeDot={{ r: 6 }}
                 />
               </AreaChart>
             </ResponsiveContainer>

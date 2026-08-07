@@ -22,7 +22,7 @@ function App() {
       </nav>
       <Dashboard />
       <footer>
-        © 2024 Expensify Pro. All rights reserved.
+        © 2024 Expensify. All rights reserved.
       </footer>
     </div>
   );

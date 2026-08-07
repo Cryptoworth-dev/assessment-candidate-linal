@@ -46,9 +46,10 @@ class ExpenseController extends Controller
      * Display a spending summary (total spend and per category).
      * @return \Illuminate\Http\JsonResponse
      */
-    public function summary(): JsonResponse
+    public function summary(Request $request): JsonResponse
     {
-        $summary = $this->expenseService->getSpendingSummary();
+        $filters = $request->only(['search', 'category', 'start_date', 'end_date']);
+        $summary = $this->expenseService->getSpendingSummary($filters);
 
         return response()->json([
             'message' => 'Spending summary retrieved successfully',
