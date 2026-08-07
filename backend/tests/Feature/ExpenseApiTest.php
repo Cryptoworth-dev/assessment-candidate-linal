@@ -17,7 +17,7 @@ class ExpenseApiTest extends TestCase
         $response = $this->getJson('/api/expenses');
 
         $response->assertStatus(200)
-                 ->assertJsonCount(5, 'data');
+                 ->assertJsonCount(5, 'data.data');
     }
 
     public function test_can_create_expense()
