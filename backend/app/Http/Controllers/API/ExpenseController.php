@@ -59,6 +59,42 @@ class ExpenseController extends Controller
 
 
     /**
+     * Export expenses to CSV.
+     * @param \Illuminate\Http\Request $request
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function export(Request $request)
+    {
+        $filters = $request->only(['search', 'category', 'start_date', 'end_date', 'sort_by', 'sort_dir']);
+        $expenses = $this->expenseService->getExpensesForExport($filters);
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="expenses.csv"',
+        ];
+
+        $callback = function () use ($expenses) {
+            $file = fopen('php://output', 'w');
+            
+            fputcsv($file, ['No.', 'Description', 'Amount', 'Category', 'Date']);
+            
+            $index = 1;
+            foreach ($expenses as $expense) {
+                fputcsv($file, [
+                    $index++,
+                    $expense->description,
+                    $expense->amount,
+                    $expense->category,
+                    $expense->date,
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
      * Store a newly created expense in storage.
      * @param \App\Http\Requests\StoreExpenseRequest $request
      * @return \Illuminate\Http\JsonResponse

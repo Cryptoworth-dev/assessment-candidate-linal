@@ -9,4 +9,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('expenses/summary', [ExpenseController::class, 'summary']);
+Route::get('expenses/export', [ExpenseController::class, 'export']);
 Route::apiResource('expenses', ExpenseController::class);

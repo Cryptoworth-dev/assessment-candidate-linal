@@ -1,7 +1,7 @@
 import { Search, Plus, Download } from 'lucide-react';
 import { format, subDays, startOfYear } from 'date-fns';
 
-const FilterBar = ({ filters, setFilters, onAddClick }) => {
+const FilterBar = ({ filters, setFilters, onAddClick, onExport }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
@@ -81,7 +81,7 @@ const FilterBar = ({ filters, setFilters, onAddClick }) => {
       </div>
 
       <div style={{ display: 'flex', gap: '1rem' }}>
-        <button className="btn-outline">
+        <button className="btn-outline" onClick={onExport}>
           <Download size={16} /> Export as CSV
         </button>
         <button className="btn-primary" onClick={onAddClick}>
