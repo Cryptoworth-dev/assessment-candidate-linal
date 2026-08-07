@@ -127,4 +127,17 @@ class ExpenseApiTest extends TestCase
 
         $response->assertStatus(404);
     }
+    public function test_can_get_spending_summary()
+    {
+        Expense::factory()->create(['category' => 'Food', 'amount' => 50.00]);
+        Expense::factory()->create(['category' => 'Food', 'amount' => 25.50]);
+        Expense::factory()->create(['category' => 'Transport', 'amount' => 100.00]);
+
+        $response = $this->getJson('/api/expenses/summary');
+
+        $response->assertStatus(200)
+                 ->assertJsonPath('data.total_spend', 175.50)
+                 ->assertJsonPath('data.by_category.Food', 75.50)
+                 ->assertJsonPath('data.by_category.Transport', 100);
+    }
 }
