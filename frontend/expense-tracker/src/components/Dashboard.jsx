@@ -34,7 +34,7 @@ const Dashboard = () => {
       setExpenses(expensesRes.data.data.data);
       setPagination(expensesRes.data.data);
 
-      const summaryRes = await api.get('/expenses/summary');
+      const summaryRes = await api.get('/expenses/summary', { params: filters });
       setSummary(summaryRes.data.data);
     } catch (err) {
       console.error('Error fetching data:', err);
