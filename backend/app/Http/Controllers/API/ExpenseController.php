@@ -38,6 +38,20 @@ class ExpenseController extends Controller
             'data' => $expenses
         ], 200);
     }
+    /**
+     * Display a spending summary (total spend and per category).
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function summary(): JsonResponse
+    {
+        $summary = $this->expenseService->getSpendingSummary();
+
+        return response()->json([
+            'message' => 'Spending summary retrieved successfully',
+            'data' => $summary
+        ], 200);
+    }
+
 
     /**
      * Store a newly created expense in storage.
