@@ -1,4 +1,3 @@
-import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import { CATEGORY_COLORS } from '../utils/constants';
@@ -20,6 +19,19 @@ const ExpenseList = ({ expenses, pagination, filters, onPageChange, onSort, onEd
     return filters.sort_dir === 'asc' 
       ? <ArrowUp size={14} color="var(--primary-green)" style={{ display: 'inline', marginLeft: '4px', verticalAlign: 'text-bottom' }} /> 
       : <ArrowDown size={14} color="var(--primary-green)" style={{ display: 'inline', marginLeft: '4px', verticalAlign: 'text-bottom' }} />;
+  };
+
+  const getPageNumbers = () => {
+    if (!pagination) return [];
+    let start = Math.max(1, pagination.current_page - 2);
+    let end = Math.min(pagination.last_page, start + 4);
+    if (end - start < 4) start = Math.max(1, end - 4);
+    
+    const pages = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   };
 
   return (
@@ -103,14 +115,14 @@ const ExpenseList = ({ expenses, pagination, filters, onPageChange, onSort, onEd
               Prev
             </button>
             
-            {/* Displaying simple page numbers based on mockup */}
-            {[...Array(Math.min(3, pagination.last_page))].map((_, idx) => (
+            {/* Dynamic page numbers */}
+            {getPageNumbers().map(pageNum => (
               <button 
-                key={idx}
-                className={`page-btn ${pagination.current_page === idx + 1 ? 'active' : ''}`}
-                onClick={() => onPageChange(idx + 1)}
+                key={pageNum}
+                className={`page-btn ${pagination.current_page === pageNum ? 'active' : ''}`}
+                onClick={() => onPageChange(pageNum)}
               >
-                {idx + 1}
+                {pageNum}
               </button>
             ))}
 

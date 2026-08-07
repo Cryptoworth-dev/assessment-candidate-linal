@@ -1,4 +1,3 @@
-import React from 'react';
 import Dashboard from './components/Dashboard';
 import expensifyLogo from './assets/expensify_logo.png';
 

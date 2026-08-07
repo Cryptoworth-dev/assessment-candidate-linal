@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Download } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 
 import FilterBar from './FilterBar';
@@ -11,7 +10,7 @@ const Dashboard = () => {
   const [summary, setSummary] = useState({});
   const [expenses, setExpenses] = useState([]);
   const [pagination, setPagination] = useState(null);
-  const [loading, setLoading] = useState(true);
+
 
   // Filters State
   const [filters, setFilters] = useState({
@@ -30,7 +29,7 @@ const Dashboard = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
+
       const expensesRes = await api.get('/expenses', { params: filters });
       setExpenses(expensesRes.data.data.data);
       setPagination(expensesRes.data.data);
@@ -39,8 +38,6 @@ const Dashboard = () => {
       setSummary(summaryRes.data.data);
     } catch (err) {
       console.error('Error fetching data:', err);
-    } finally {
-      setLoading(false);
     }
   }, [filters]);
 

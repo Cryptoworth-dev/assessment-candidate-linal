@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import api from '../api/axios';
 
@@ -15,6 +15,7 @@ const ExpenseModal = ({ isOpen, onClose, expense, onSuccess }) => {
 
   useEffect(() => {
     if (expense) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         description: expense.description,
         amount: expense.amount,

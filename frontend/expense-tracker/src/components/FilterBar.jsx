@@ -1,4 +1,3 @@
-import React from 'react';
 import { Search, Plus, Download } from 'lucide-react';
 
 const FilterBar = ({ filters, setFilters, onAddClick }) => {
