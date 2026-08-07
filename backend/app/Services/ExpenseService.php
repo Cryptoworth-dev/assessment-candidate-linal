@@ -5,15 +5,46 @@ namespace App\Services;
 use App\Models\Expense;
 use Illuminate\Database\Eloquent\Collection;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+
 class ExpenseService
 {
     /**
-     * Get all expenses ordered by the most recent first.
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Get all expenses ordered by the most recent first, with optional filters and pagination.
+     * @param array $filters
+     * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function getAllExpenses(): Collection
+    public function getAllExpenses(array $filters = []): LengthAwarePaginator
     {
-        return Expense::orderBy('date', 'desc')->orderBy('created_at', 'desc')->get();
+        $query = Expense::query();
+
+        if (!empty($filters['search'])) {
+            $query->where('description', 'ilike', '%' . $filters['search'] . '%');
+        }
+
+        if (!empty($filters['category'])) {
+            $query->where('category', $filters['category']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $query->whereDate('date', '>=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $query->whereDate('date', '<=', $filters['end_date']);
+        }
+
+        $sortBy = $filters['sort_by'] ?? 'date';
+        $sortDir = $filters['sort_dir'] ?? 'desc';
+
+        $allowedSorts = ['date', 'amount'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'date';
+        }
+
+        $sortDir = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy($sortBy, $sortDir)->orderBy('created_at', 'desc')->paginate(10);
     }
 
     /**

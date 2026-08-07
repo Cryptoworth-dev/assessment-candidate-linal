@@ -9,6 +9,8 @@ use App\Models\Expense;
 use App\Services\ExpenseService;
 use Illuminate\Http\JsonResponse;
 
+use Illuminate\Http\Request;
+
 class ExpenseController extends Controller
 {
     /**
@@ -27,11 +29,13 @@ class ExpenseController extends Controller
 
     /**
      * Display a listing of the expenses.
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $expenses = $this->expenseService->getAllExpenses();
+        $filters = $request->only(['search', 'category', 'start_date', 'end_date', 'sort_by', 'sort_dir']);
+        $expenses = $this->expenseService->getAllExpenses($filters);
 
         return response()->json([
             'message' => 'Expenses retrieved successfully',
