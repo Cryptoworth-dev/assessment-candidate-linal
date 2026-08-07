@@ -19,7 +19,7 @@ class ExpenseService
         $query = Expense::query();
 
         if (!empty($filters['search'])) {
-            $query->where('description', 'ilike', '%' . $filters['search'] . '%');
+            $query->where('description', 'like', '%' . $filters['search'] . '%');
         }
 
         if (!empty($filters['category'])) {
@@ -45,6 +45,44 @@ class ExpenseService
         $sortDir = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
 
         return $query->orderBy($sortBy, $sortDir)->orderBy('created_at', 'desc')->paginate(10);
+    }
+
+    /**
+     * Get all expenses for export as a Collection (not paginated).
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getExpensesForExport(array $filters = []): Collection
+    {
+        $query = Expense::query();
+
+        if (!empty($filters['search'])) {
+            $query->where('description', 'ilike', '%' . $filters['search'] . '%');
+        }
+
+        if (!empty($filters['category'])) {
+            $query->where('category', $filters['category']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $query->whereDate('date', '>=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $query->whereDate('date', '<=', $filters['end_date']);
+        }
+
+        $sortBy = $filters['sort_by'] ?? 'date';
+        $sortDir = $filters['sort_dir'] ?? 'desc';
+
+        $allowedSorts = ['date', 'amount'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'date';
+        }
+
+        $sortDir = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy($sortBy, $sortDir)->orderBy('created_at', 'desc')->get();
     }
 
     /**
@@ -89,7 +127,7 @@ class ExpenseService
         $baseQuery = Expense::query();
         
         if (!empty($filters['search'])) {
-            $baseQuery->where('description', 'ilike', '%' . $filters['search'] . '%');
+            $baseQuery->where('description', 'like', '%' . $filters['search'] . '%');
         }
         if (!empty($filters['start_date'])) {
             $baseQuery->whereDate('date', '>=', $filters['start_date']);

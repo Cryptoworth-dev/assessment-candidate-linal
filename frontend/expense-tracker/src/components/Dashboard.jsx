@@ -81,6 +81,26 @@ const Dashboard = () => {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const res = await api.get('/expenses/export', { 
+        params: filters,
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'expenses.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (err) {
+      console.error('Error exporting CSV', err);
+      alert('Failed to export expenses.');
+    }
+  };
+
   return (
     <div className="app-container">
       <FilterBar 
@@ -95,6 +115,7 @@ const Dashboard = () => {
              });
         }} 
         onAddClick={handleOpenAddModal}
+        onExport={handleExport}
       />
       
       <ExpenseList 

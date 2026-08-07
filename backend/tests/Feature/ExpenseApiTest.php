@@ -140,4 +140,53 @@ class ExpenseApiTest extends TestCase
                  ->assertJsonPath('data.by_category.Food', 75.50)
                  ->assertJsonPath('data.by_category.Transport', 100);
     }
+
+    public function test_can_list_expenses_with_filters()
+    {
+        Expense::factory()->create(['description' => 'Apple', 'category' => 'Food', 'date' => '2026-08-01']);
+        Expense::factory()->create(['description' => 'Banana', 'category' => 'Food', 'date' => '2026-08-05']);
+        Expense::factory()->create(['description' => 'Bus Ticket', 'category' => 'Transport', 'date' => '2026-08-03']);
+        $response = $this->getJson('/api/expenses?category=Food');
+        $response->assertStatus(200)->assertJsonCount(2, 'data.data');
+
+        $response = $this->getJson('/api/expenses?search=Apple');
+        $response->assertStatus(200)->assertJsonCount(1, 'data.data');
+        
+        $response = $this->getJson('/api/expenses?start_date=2026-08-02&end_date=2026-08-06');
+        $response->assertStatus(200)->assertJsonCount(2, 'data.data');
+    }
+
+    public function test_spending_summary_category_filter_behavior()
+    {
+        Expense::factory()->create(['category' => 'Food', 'amount' => 50.00]);
+        Expense::factory()->create(['category' => 'Transport', 'amount' => 100.00]);
+
+        $response = $this->getJson('/api/expenses/summary?category=Food');
+
+        $response->assertStatus(200)
+                 ->assertJsonPath('data.total_spend', 50)
+                 ->assertJsonPath('data.by_category.Food', 50)
+                 ->assertJsonPath('data.by_category.Transport', 100);
+    }
+
+    public function test_can_export_expenses_to_csv()
+    {
+        Expense::factory()->create([
+            'description' => 'Test CSV Export', 
+            'amount' => 45.00, 
+            'category' => 'Food',
+            'date' => '2026-08-07'
+        ]);
+
+        $response = $this->get('/api/expenses/export');
+
+        $response->assertStatus(200)
+                 ->assertHeader('Content-Type', 'text/csv; charset=UTF-8')
+                 ->assertHeader('Content-Disposition', 'attachment; filename="expenses.csv"');
+
+        $content = $response->streamedContent();
+        
+        $this->assertStringContainsString('No.,Description,Amount,Category,Date', $content);
+        $this->assertStringContainsString('1,"Test CSV Export",45.00,Food,"2026-08-07 00:00:00"', $content);
+    }
 }
