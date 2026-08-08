@@ -3,7 +3,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, subDays, startOfYear } from 'date-fns';
 import { CATEGORY_COLORS } from '../utils/constants';
 
 const DashboardWidgets = ({ summary, filters, setFilters }) => {
@@ -48,6 +48,46 @@ const DashboardWidgets = ({ summary, filters, setFilters }) => {
             <option value="time">Spending Over Time</option>
           </select>
         </div>
+
+        {activeChart === 'category' && (
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <select
+              className="filter-select"
+              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+              value={filters?.date_range || ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                const today = new Date();
+                let start_date = '';
+                const end_date = format(today, 'yyyy-MM-dd');
+            
+                if (val === '10') {
+                  start_date = format(subDays(today, 10), 'yyyy-MM-dd');
+                } else if (val === '30') {
+                  start_date = format(subDays(today, 30), 'yyyy-MM-dd');
+                } else if (val === '90') {
+                  start_date = format(subDays(today, 90), 'yyyy-MM-dd');
+                } else if (val === '365') {
+                  start_date = format(startOfYear(today), 'yyyy-MM-dd');
+                }
+            
+                setFilters(prev => ({
+                  ...prev,
+                  start_date,
+                  end_date: val === '' ? '' : end_date,
+                  date_range: val,
+                  page: 1
+                }));
+              }}
+            >
+              <option value="">All Time</option>
+              <option value="10">Last 10 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="365">This Year</option>
+            </select>
+          </div>
+        )}
 
         {activeChart === 'time' && (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
