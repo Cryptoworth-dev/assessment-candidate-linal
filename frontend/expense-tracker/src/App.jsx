@@ -38,7 +38,7 @@ function DashboardLayout() {
       </nav>
       <Dashboard />
       <footer>
-        © 2024 Expensify. All rights reserved.
+        © 2026 Expensify. All rights reserved.
       </footer>
     </div>
   );
