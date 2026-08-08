@@ -8,11 +8,15 @@ use App\Http\Requests\UpdateExpenseRequest;
 use App\Models\Expense;
 use App\Services\ExpenseService;
 use Illuminate\Http\JsonResponse;
-
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\ExpenseResource;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ExpenseController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * @var ExpenseService
      */
@@ -32,15 +36,12 @@ class ExpenseController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $filters = $request->only(['search', 'category', 'start_date', 'end_date', 'sort_by', 'sort_dir']);
         $expenses = $this->expenseService->getAllExpenses($filters);
 
-        return response()->json([
-            'message' => 'Expenses retrieved successfully',
-            'data' => $expenses
-        ], 200);
+        return ExpenseResource::collection($expenses)->additional(['message' => 'Expenses retrieved successfully']);
     }
     /**
      * Display a spending summary (total spend and per category).
@@ -99,14 +100,14 @@ class ExpenseController extends Controller
      * @param \App\Http\Requests\StoreExpenseRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(StoreExpenseRequest $request): JsonResponse
+    public function store(StoreExpenseRequest $request)
     {
         $expense = $this->expenseService->createExpense($request->validated());
 
-        return response()->json([
-            'message' => 'Expense created successfully',
-            'data' => $expense
-        ], 201);
+        return (new ExpenseResource($expense))
+            ->additional(['message' => 'Expense created successfully'])
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -114,12 +115,11 @@ class ExpenseController extends Controller
      * @param \App\Models\Expense $expense
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Expense $expense): JsonResponse
+    public function show(Expense $expense)
     {
-        return response()->json([
-            'message' => 'Expense retrieved successfully',
-            'data' => $expense
-        ], 200);
+        $this->authorize('view', $expense);
+
+        return (new ExpenseResource($expense))->additional(['message' => 'Expense retrieved successfully']);
     }
 
     /**
@@ -128,14 +128,13 @@ class ExpenseController extends Controller
      * @param \App\Models\Expense $expense
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(UpdateExpenseRequest $request, Expense $expense): JsonResponse
+    public function update(UpdateExpenseRequest $request, Expense $expense)
     {
+        $this->authorize('update', $expense);
+
         $updatedExpense = $this->expenseService->updateExpense($expense, $request->validated());
 
-        return response()->json([
-            'message' => 'Expense updated successfully',
-            'data' => $updatedExpense
-        ], 200);
+        return (new ExpenseResource($updatedExpense))->additional(['message' => 'Expense updated successfully']);
     }
 
     /**
@@ -145,6 +144,8 @@ class ExpenseController extends Controller
      */
     public function destroy(Expense $expense): JsonResponse
     {
+        $this->authorize('delete', $expense);
+
         $this->expenseService->deleteExpense($expense);
 
         return response()->json(null, 204);
