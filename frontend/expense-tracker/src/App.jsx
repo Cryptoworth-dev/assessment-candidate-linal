@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import Signup from './components/Signup';
 import Signin from './components/Signin';
@@ -32,9 +32,6 @@ function DashboardLayout() {
         </div>
         <div className="nav-right">
           <div onClick={handleSignOut} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden' }}>
-              <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile" style={{ width: '100%' }} />
-            </div>
             <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Sign Out</span>
           </div>
         </div>
@@ -59,6 +56,14 @@ function AuthLoading() {
   return <LoadingScreen message="Authenticating..." />;
 }
 
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    return <Navigate to="/signin" replace />;
+  }
+  return children;
+}
+
 function App() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -75,7 +80,11 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<DashboardLayout />} />
+      <Route path="/" element={
+        <ProtectedRoute>
+          <DashboardLayout />
+        </ProtectedRoute>
+      } />
       <Route path="/signup" element={<Signup />} />
       <Route path="/signin" element={<Signin />} />
       <Route path="/loading" element={<AuthLoading />} />

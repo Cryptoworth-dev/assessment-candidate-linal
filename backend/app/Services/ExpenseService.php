@@ -20,7 +20,7 @@ class ExpenseService
         $query = Expense::query()->where('user_id', Auth::id());
 
         if (!empty($filters['search'])) {
-            $query->where('description', 'like', '%' . $filters['search'] . '%');
+            $query->whereRaw('LOWER(description) LIKE LOWER(?)', ['%' . $filters['search'] . '%']);
         }
 
         if (!empty($filters['category'])) {
@@ -58,7 +58,7 @@ class ExpenseService
         $query = Expense::query()->where('user_id', Auth::id());
 
         if (!empty($filters['search'])) {
-            $query->where('description', 'like', '%' . $filters['search'] . '%');
+            $query->whereRaw('LOWER(description) LIKE LOWER(?)', ['%' . $filters['search'] . '%']);
         }
 
         if (!empty($filters['category'])) {
@@ -129,7 +129,7 @@ class ExpenseService
         $baseQuery = Expense::query()->where('user_id', Auth::id());
         
         if (!empty($filters['search'])) {
-            $baseQuery->where('description', 'like', '%' . $filters['search'] . '%');
+            $baseQuery->whereRaw('LOWER(description) LIKE LOWER(?)', ['%' . $filters['search'] . '%']);
         }
         if (!empty($filters['start_date'])) {
             $baseQuery->whereDate('date', '>=', $filters['start_date']);
