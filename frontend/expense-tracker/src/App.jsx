@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import Signup from './components/Signup';
+import Signin from './components/Signin';
 import expensifyLogo from './assets/expensify_logo.png';
 
 function DashboardLayout() {
@@ -35,6 +36,7 @@ function App() {
     <Routes>
       <Route path="/" element={<DashboardLayout />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/signin" element={<Signin />} />
     </Routes>
   );
 }
