@@ -26,7 +26,7 @@ class ExpenseApiTest extends TestCase
 
     public function test_can_list_expenses()
     {
-        Expense::factory()->count(5)->create();
+        Expense::factory()->count(5)->create(['user_id' => $this->user->id]);
 
         $response = $this->getJson('/api/expenses');
 
@@ -68,7 +68,7 @@ class ExpenseApiTest extends TestCase
 
     public function test_can_show_expense()
     {
-        $expense = Expense::factory()->create();
+        $expense = Expense::factory()->create(['user_id' => $this->user->id]);
 
         $response = $this->getJson("/api/expenses/{$expense->id}");
 
@@ -95,7 +95,7 @@ class ExpenseApiTest extends TestCase
 
     public function test_can_update_expense()
     {
-        $expense = Expense::factory()->create();
+        $expense = Expense::factory()->create(['user_id' => $this->user->id]);
 
         $payload = [
             'description' => 'Updated Expense',
@@ -117,7 +117,7 @@ class ExpenseApiTest extends TestCase
 
     public function test_cannot_update_expense_with_invalid_data()
     {
-        $expense = Expense::factory()->create();
+        $expense = Expense::factory()->create(['user_id' => $this->user->id]);
 
         $payload = [
             'description' => '',
@@ -134,7 +134,7 @@ class ExpenseApiTest extends TestCase
 
     public function test_can_delete_expense()
     {
-        $expense = Expense::factory()->create();
+        $expense = Expense::factory()->create(['user_id' => $this->user->id]);
 
         $response = $this->deleteJson("/api/expenses/{$expense->id}");
 
@@ -180,9 +180,9 @@ class ExpenseApiTest extends TestCase
     }
     public function test_can_get_spending_summary()
     {
-        Expense::factory()->create(['category' => 'Food', 'amount' => 50.00]);
-        Expense::factory()->create(['category' => 'Food', 'amount' => 25.50]);
-        Expense::factory()->create(['category' => 'Transport', 'amount' => 100.00]);
+        Expense::factory()->create(['category' => 'Food', 'amount' => 50.00, 'user_id' => $this->user->id]);
+        Expense::factory()->create(['category' => 'Food', 'amount' => 25.50, 'user_id' => $this->user->id]);
+        Expense::factory()->create(['category' => 'Transport', 'amount' => 100.00, 'user_id' => $this->user->id]);
 
         $response = $this->getJson('/api/expenses/summary');
 
@@ -194,9 +194,9 @@ class ExpenseApiTest extends TestCase
 
     public function test_can_list_expenses_with_filters()
     {
-        Expense::factory()->create(['description' => 'Apple', 'category' => 'Food', 'date' => '2026-08-01']);
-        Expense::factory()->create(['description' => 'Banana', 'category' => 'Food', 'date' => '2026-08-05']);
-        Expense::factory()->create(['description' => 'Bus Ticket', 'category' => 'Transport', 'date' => '2026-08-03']);
+        Expense::factory()->create(['description' => 'Apple', 'category' => 'Food', 'date' => '2026-08-01', 'user_id' => $this->user->id]);
+        Expense::factory()->create(['description' => 'Banana', 'category' => 'Food', 'date' => '2026-08-05', 'user_id' => $this->user->id]);
+        Expense::factory()->create(['description' => 'Bus Ticket', 'category' => 'Transport', 'date' => '2026-08-03', 'user_id' => $this->user->id]);
         $response = $this->getJson('/api/expenses?category=Food');
         $response->assertStatus(200)->assertJsonCount(2, 'data');
 
@@ -209,8 +209,8 @@ class ExpenseApiTest extends TestCase
 
     public function test_spending_summary_category_filter_behavior()
     {
-        Expense::factory()->create(['category' => 'Food', 'amount' => 50.00]);
-        Expense::factory()->create(['category' => 'Transport', 'amount' => 100.00]);
+        Expense::factory()->create(['category' => 'Food', 'amount' => 50.00, 'user_id' => $this->user->id]);
+        Expense::factory()->create(['category' => 'Transport', 'amount' => 100.00, 'user_id' => $this->user->id]);
 
         $response = $this->getJson('/api/expenses/summary?category=Food');
 
@@ -226,7 +226,8 @@ class ExpenseApiTest extends TestCase
             'description' => 'Test CSV Export', 
             'amount' => 45.00, 
             'category' => 'Food',
-            'date' => '2026-08-07'
+            'date' => '2026-08-07',
+            'user_id' => $this->user->id
         ]);
 
         $response = $this->get('/api/expenses/export');
