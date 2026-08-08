@@ -1,7 +1,26 @@
+import { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
+import Signup from './components/Signup';
+import Signin from './components/Signin';
+import LoadingScreen from './components/LoadingScreen';
 import expensifyLogo from './assets/expensify_logo.png';
+import api from './api/axios';
 
-function App() {
+function DashboardLayout() {
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await api.post('/logout');
+    } catch (error) {
+      console.error('Logout failed on backend:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      navigate('/signin');
+    }
+  };
+
   return (
     <div>
       <nav className="top-nav">
@@ -12,7 +31,7 @@ function App() {
           Expensify
         </div>
         <div className="nav-right">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+          <div onClick={handleSignOut} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden' }}>
               <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile" style={{ width: '100%' }} />
             </div>
@@ -25,6 +44,42 @@ function App() {
         © 2024 Expensify. All rights reserved.
       </footer>
     </div>
+  );
+}
+
+function AuthLoading() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate('/', { replace: true });
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  return <LoadingScreen message="Authenticating..." />;
+}
+
+function App() {
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoad(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isInitialLoad) {
+    return <LoadingScreen message="Loading..." />;
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<DashboardLayout />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/signin" element={<Signin />} />
+      <Route path="/loading" element={<AuthLoading />} />
+    </Routes>
   );
 }
 

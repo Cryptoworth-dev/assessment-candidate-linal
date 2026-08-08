@@ -31,8 +31,8 @@ const Dashboard = () => {
     try {
 
       const expensesRes = await api.get('/expenses', { params: filters });
-      setExpenses(expensesRes.data.data.data);
-      setPagination(expensesRes.data.data);
+      setExpenses(expensesRes.data.data || []);
+      setPagination(expensesRes.data.meta || expensesRes.data);
 
       const summaryRes = await api.get('/expenses/summary', { params: filters });
       setSummary(summaryRes.data.data);
