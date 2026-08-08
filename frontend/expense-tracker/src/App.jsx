@@ -5,8 +5,22 @@ import Signup from './components/Signup';
 import Signin from './components/Signin';
 import LoadingScreen from './components/LoadingScreen';
 import expensifyLogo from './assets/expensify_logo.png';
+import api from './api/axios';
 
 function DashboardLayout() {
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await api.post('/logout');
+    } catch (error) {
+      console.error('Logout failed on backend:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      navigate('/signin');
+    }
+  };
+
   return (
     <div>
       <nav className="top-nav">
@@ -17,7 +31,7 @@ function DashboardLayout() {
           Expensify
         </div>
         <div className="nav-right">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+          <div onClick={handleSignOut} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden' }}>
               <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile" style={{ width: '100%' }} />
             </div>
