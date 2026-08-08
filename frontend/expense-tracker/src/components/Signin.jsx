@@ -29,7 +29,7 @@ export default function Signin() {
             if (response.data && response.data.data && response.data.data.access_token) {
                 localStorage.setItem('auth_token', response.data.data.access_token);
             }
-            navigate('/');
+            navigate('/loading');
         } catch (error) {
             if (error.response && error.response.data.errors) {
                 setErrors(error.response.data.errors);

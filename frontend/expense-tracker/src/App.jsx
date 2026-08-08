@@ -1,7 +1,9 @@
-import { Routes, Route } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import Signup from './components/Signup';
 import Signin from './components/Signin';
+import LoadingScreen from './components/LoadingScreen';
 import expensifyLogo from './assets/expensify_logo.png';
 
 function DashboardLayout() {
@@ -31,12 +33,38 @@ function DashboardLayout() {
   );
 }
 
+function AuthLoading() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate('/', { replace: true });
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  return <LoadingScreen message="Authenticating..." />;
+}
+
 function App() {
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoad(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isInitialLoad) {
+    return <LoadingScreen message="Loading..." />;
+  }
+
   return (
     <Routes>
       <Route path="/" element={<DashboardLayout />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/signin" element={<Signin />} />
+      <Route path="/loading" element={<AuthLoading />} />
     </Routes>
   );
 }
