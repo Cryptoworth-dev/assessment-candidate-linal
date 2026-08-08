@@ -1,7 +1,9 @@
+import { Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
+import Signup from './components/Signup';
 import expensifyLogo from './assets/expensify_logo.png';
 
-function App() {
+function DashboardLayout() {
   return (
     <div>
       <nav className="top-nav">
@@ -25,6 +27,15 @@ function App() {
         © 2024 Expensify. All rights reserved.
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<DashboardLayout />} />
+      <Route path="/signup" element={<Signup />} />
+    </Routes>
   );
 }
 

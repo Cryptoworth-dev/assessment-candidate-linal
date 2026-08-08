@@ -6,15 +6,13 @@ import {
 import { format, parseISO } from 'date-fns';
 import { CATEGORY_COLORS } from '../utils/constants';
 
-const DashboardWidgets = ({ summary, expenses, filters, setFilters }) => {
-  const [activeChart, setActiveChart] = useState('category'); // 'category' or 'time'
+const DashboardWidgets = ({ summary, filters, setFilters }) => {
+  const [activeChart, setActiveChart] = useState('category');
 
-  // Determine active color for AreaChart based on selected category, or default green
   const activeLineColor = filters?.category && CATEGORY_COLORS[filters.category]
     ? CATEGORY_COLORS[filters.category]
     : '#10b981';
 
-  // Categories Pie Chart Data
   const categoryData = useMemo(() => {
     if (!summary?.by_category) return [];
 
@@ -27,7 +25,6 @@ const DashboardWidgets = ({ summary, expenses, filters, setFilters }) => {
     }));
   }, [summary]);
 
-  // Area Chart Data
   const lineData = useMemo(() => {
     if (!summary?.over_time) return [];
 
