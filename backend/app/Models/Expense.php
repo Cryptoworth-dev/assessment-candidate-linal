@@ -14,7 +14,13 @@ class Expense extends Model
         'amount',
         'category',
         'date',
+        'user_id'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     protected $casts = [
         'amount' => 'decimal:2',

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Expense;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -16,7 +17,7 @@ class ExpenseService
      */
     public function getAllExpenses(array $filters = []): LengthAwarePaginator
     {
-        $query = Expense::query();
+        $query = Expense::query()->where('user_id', Auth::id());
 
         if (!empty($filters['search'])) {
             $query->where('description', 'like', '%' . $filters['search'] . '%');
@@ -54,10 +55,10 @@ class ExpenseService
      */
     public function getExpensesForExport(array $filters = []): Collection
     {
-        $query = Expense::query();
+        $query = Expense::query()->where('user_id', Auth::id());
 
         if (!empty($filters['search'])) {
-            $query->where('description', 'ilike', '%' . $filters['search'] . '%');
+            $query->where('description', 'like', '%' . $filters['search'] . '%');
         }
 
         if (!empty($filters['category'])) {
@@ -92,6 +93,7 @@ class ExpenseService
      */
     public function createExpense(array $data): Expense
     {
+        $data['user_id'] = Auth::id();
         return Expense::create($data);
     }
 
@@ -124,7 +126,7 @@ class ExpenseService
      */
     public function getSpendingSummary(array $filters = []): array
     {
-        $baseQuery = Expense::query();
+        $baseQuery = Expense::query()->where('user_id', Auth::id());
         
         if (!empty($filters['search'])) {
             $baseQuery->where('description', 'like', '%' . $filters['search'] . '%');
@@ -136,8 +138,6 @@ class ExpenseService
             $baseQuery->whereDate('date', '<=', $filters['end_date']);
         }
 
-        // 1. Compute per-category spending without applying the category filter
-        // This ensures the pie chart always shows all categories
         $perCategory = (clone $baseQuery)->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->get()
@@ -146,7 +146,6 @@ class ExpenseService
             })
             ->toArray();
 
-        // 2. Now apply the category filter for total spend and over time chart
         if (!empty($filters['category'])) {
             $baseQuery->where('category', $filters['category']);
         }

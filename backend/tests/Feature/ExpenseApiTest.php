@@ -10,6 +10,20 @@ class ExpenseApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** @var \App\Models\User */
+    protected $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        /** @var \App\Models\User $user */
+        $user = \App\Models\User::factory()->create();
+        $this->user = $user;
+        
+        $this->actingAs($this->user);
+    }
+
     public function test_can_list_expenses()
     {
         Expense::factory()->count(5)->create();
@@ -17,7 +31,7 @@ class ExpenseApiTest extends TestCase
         $response = $this->getJson('/api/expenses');
 
         $response->assertStatus(200)
-                 ->assertJsonCount(5, 'data.data');
+                 ->assertJsonCount(5, 'data');
     }
 
     public function test_can_create_expense()
@@ -67,6 +81,16 @@ class ExpenseApiTest extends TestCase
         $response = $this->getJson('/api/expenses/99999');
 
         $response->assertStatus(404);
+    }
+
+    public function test_cannot_show_other_users_expense()
+    {
+        $otherUser = \App\Models\User::factory()->create();
+        $expense = Expense::factory()->create(['user_id' => $otherUser->id]);
+
+        $response = $this->getJson("/api/expenses/{$expense->id}");
+
+        $response->assertStatus(403);
     }
 
     public function test_can_update_expense()
@@ -127,6 +151,33 @@ class ExpenseApiTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_cannot_update_other_users_expense()
+    {
+        $otherUser = \App\Models\User::factory()->create();
+        $expense = Expense::factory()->create(['user_id' => $otherUser->id]);
+
+        $payload = [
+            'description' => 'Updated by another user',
+            'amount' => 500,
+            'category' => 'Test',
+            'date' => '2026-08-07',
+        ];
+
+        $response = $this->putJson("/api/expenses/{$expense->id}", $payload);
+
+        $response->assertStatus(403);
+    }
+    
+    public function test_cannot_delete_other_users_expense()
+    {
+        $otherUser = \App\Models\User::factory()->create();
+        $expense = Expense::factory()->create(['user_id' => $otherUser->id]);
+
+        $response = $this->deleteJson("/api/expenses/{$expense->id}");
+
+        $response->assertStatus(403);
+    }
     public function test_can_get_spending_summary()
     {
         Expense::factory()->create(['category' => 'Food', 'amount' => 50.00]);
@@ -147,13 +198,13 @@ class ExpenseApiTest extends TestCase
         Expense::factory()->create(['description' => 'Banana', 'category' => 'Food', 'date' => '2026-08-05']);
         Expense::factory()->create(['description' => 'Bus Ticket', 'category' => 'Transport', 'date' => '2026-08-03']);
         $response = $this->getJson('/api/expenses?category=Food');
-        $response->assertStatus(200)->assertJsonCount(2, 'data.data');
+        $response->assertStatus(200)->assertJsonCount(2, 'data');
 
         $response = $this->getJson('/api/expenses?search=Apple');
-        $response->assertStatus(200)->assertJsonCount(1, 'data.data');
+        $response->assertStatus(200)->assertJsonCount(1, 'data');
         
         $response = $this->getJson('/api/expenses?start_date=2026-08-02&end_date=2026-08-06');
-        $response->assertStatus(200)->assertJsonCount(2, 'data.data');
+        $response->assertStatus(200)->assertJsonCount(2, 'data');
     }
 
     public function test_spending_summary_category_filter_behavior()
