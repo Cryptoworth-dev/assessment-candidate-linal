@@ -38,7 +38,6 @@ class ExpenseFactory extends Factory
             'amount' => fake()->randomFloat(2, 5, 200),
             'category' => $category,
             'date' => fake()->dateTimeBetween('-4 months', 'now')->format('Y-m-d'),
-            'user_id' => \App\Models\User::inRandomOrder()->first()->id ?? null,
         ];
     }
 }
